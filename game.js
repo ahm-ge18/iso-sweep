@@ -29,6 +29,31 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
+  const audio = {
+    bgm: new Audio("audio/bgm.mp3"),
+    shatter: [
+      new Audio("audio/shatter_01.mp3"),
+      new Audio("audio/shatter_02.mp3"),
+    ],
+    shatterIndex: 0,
+    bgmStarted: false,
+    bgmStarting: false,
+    bgmFadeFrame: 0,
+    bgmVolume: 0.16,
+    sfxVolume: 0.42,
+  };
+
+  audio.bgm.loop = true;
+  audio.bgm.preload = "auto";
+  audio.bgm.volume = 0;
+  audio.bgm.setAttribute("playsinline", "");
+
+  for (const sound of audio.shatter) {
+    sound.preload = "auto";
+    sound.volume = audio.sfxVolume;
+    sound.setAttribute("playsinline", "");
+  }
+
   const state = {
     time: 0,
     lastTime: 0,
@@ -106,6 +131,67 @@
       navigator.vibrate(pattern);
     } catch (_) {
       /* Vibration is an enhancement, never a requirement. */
+    }
+  }
+
+  function startAudio() {
+    if (audio.bgmStarted || audio.bgmStarting) return;
+    audio.bgmStarting = true;
+
+    let playback;
+    try {
+      playback = audio.bgm.play();
+    } catch (_) {
+      audio.bgmStarting = false;
+      return;
+    }
+
+    if (!playback || !playback.then) {
+      audio.bgmStarting = false;
+      return;
+    }
+
+    playback
+      .then(() => {
+        audio.bgmStarting = false;
+        if (audio.bgmStarted) return;
+        audio.bgmStarted = true;
+        fadeInBackgroundMusic();
+      })
+      .catch(() => {
+        audio.bgmStarting = false;
+        // Browsers may reject playback until a later user gesture.
+      });
+  }
+
+  function fadeInBackgroundMusic() {
+    window.cancelAnimationFrame(audio.bgmFadeFrame);
+    const startedAt = performance.now();
+    const duration = 1200;
+
+    const tick = (now) => {
+      const progress = clamp((now - startedAt) / duration, 0, 1);
+      audio.bgm.volume = audio.bgmVolume * easeOutCubic(progress);
+      if (progress < 1) {
+        audio.bgmFadeFrame = window.requestAnimationFrame(tick);
+      }
+    };
+
+    audio.bgmFadeFrame = window.requestAnimationFrame(tick);
+  }
+
+  function playShatter() {
+    startAudio();
+
+    const sound = audio.shatter[audio.shatterIndex];
+    audio.shatterIndex = (audio.shatterIndex + 1) % audio.shatter.length;
+
+    try {
+      sound.currentTime = 0;
+      const playback = sound.play();
+      if (playback && playback.catch) playback.catch(() => {});
+    } catch (_) {
+      // Audio is an enhancement, never a requirement.
     }
   }
 
@@ -352,6 +438,7 @@
 
   function requestAttack() {
     pulseHint();
+    startAudio();
 
     if (!state.started) {
       state.started = true;
@@ -441,6 +528,7 @@
     state.shake = reducedMotion ? 0 : Math.min(9, 4.2 + state.chain * 0.62);
 
     addKillEffects(enemy);
+    playShatter();
 
     updateScoreUI(true);
     updateChainUI(true);
@@ -1365,6 +1453,9 @@
     if (event.repeat) return;
     requestAttack();
   });
+
+  window.addEventListener("keydown", startAudio, { once: true });
+  window.addEventListener("pointerdown", startAudio, { once: true, passive: true });
 
   canvas.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
