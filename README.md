@@ -21,7 +21,7 @@ No build step or dependencies are required.
 ## Audio
 
 - `audio/bgm.mp3` loops in the background with a soft fade-in
-- `audio/shatter_01.mp3` and `audio/shatter_02.mp3` alternate on every kill
+- `audio/shatter_01.mp3` plays on every kill
 - Browsers require a user gesture, so audio starts on the first Space press or tap
 
 ## Notes

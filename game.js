@@ -31,11 +31,7 @@
 
   const audio = {
     bgm: new Audio("audio/bgm.mp3"),
-    shatter: [
-      new Audio("audio/shatter_01.mp3"),
-      new Audio("audio/shatter_02.mp3"),
-    ],
-    shatterIndex: 0,
+    shatter: new Audio("audio/shatter_01.mp3"),
     bgmStarted: false,
     bgmStarting: false,
     bgmFadeFrame: 0,
@@ -48,11 +44,9 @@
   audio.bgm.volume = 0;
   audio.bgm.setAttribute("playsinline", "");
 
-  for (const sound of audio.shatter) {
-    sound.preload = "auto";
-    sound.volume = audio.sfxVolume;
-    sound.setAttribute("playsinline", "");
-  }
+  audio.shatter.preload = "auto";
+  audio.shatter.volume = audio.sfxVolume;
+  audio.shatter.setAttribute("playsinline", "");
 
   const state = {
     time: 0,
@@ -183,8 +177,7 @@
   function playShatter() {
     startAudio();
 
-    const sound = audio.shatter[audio.shatterIndex];
-    audio.shatterIndex = (audio.shatterIndex + 1) % audio.shatter.length;
+    const sound = audio.shatter;
 
     try {
       sound.currentTime = 0;
