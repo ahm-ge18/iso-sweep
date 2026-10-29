@@ -32,6 +32,7 @@
   const audio = {
     bgm: new Audio("audio/bgm.mp3"),
     shatter: new Audio("audio/shatter_01.mp3"),
+    activeSfx: new Set(),
     bgmStarted: false,
     bgmStarting: false,
     bgmFadeFrame: 0,
@@ -177,13 +178,32 @@
   function playShatter() {
     startAudio();
 
-    const sound = audio.shatter;
+    // Every impact gets its own audio element, so overlapping hits all ring
+    // out fully instead of restarting or cutting off the previous shatter.
+    const sound = new Audio(audio.shatter.src);
+    sound.loop = false;
+    sound.preload = "auto";
+    sound.volume = audio.sfxVolume;
+    sound.setAttribute("playsinline", "");
+
+    let cleanedUp = false;
+    const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      audio.activeSfx.delete(sound);
+      sound.removeAttribute("src");
+      sound.load();
+    };
+
+    audio.activeSfx.add(sound);
+    sound.addEventListener("ended", cleanup, { once: true });
+    sound.addEventListener("error", cleanup, { once: true });
 
     try {
-      sound.currentTime = 0;
       const playback = sound.play();
-      if (playback && playback.catch) playback.catch(() => {});
+      if (playback && playback.catch) playback.catch(cleanup);
     } catch (_) {
+      cleanup();
       // Audio is an enhancement, never a requirement.
     }
   }

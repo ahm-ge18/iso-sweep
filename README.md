@@ -21,7 +21,8 @@ No build step or dependencies are required.
 ## Audio
 
 - `audio/bgm.mp3` loops in the background with a soft fade-in
-- `audio/shatter_01.mp3` plays on every kill
+- `audio/shatter_01.mp3` plays on every kill and always runs to completion
+- Rapid kills overlap naturally instead of cutting off the previous impact
 - Browsers require a user gesture, so audio starts on the first Space press or tap
 
 ## Notes
