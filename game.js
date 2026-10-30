@@ -17,6 +17,8 @@
     status: document.getElementById("status"),
     statusText: document.getElementById("statusText"),
     toast: document.getElementById("toast"),
+    audioToggle: document.getElementById("audioToggle"),
+    audioLabel: document.getElementById("audioLabel"),
   };
 
   const TAU = Math.PI * 2;
@@ -28,16 +30,18 @@
   const CHAIN_WINDOW = 2.4;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const AUDIO_MUTE_KEY = "iso-sweep:muted";
 
   const audio = {
     bgm: new Audio("audio/bgm.mp3"),
     shatter: new Audio("audio/shatter_01.mp3"),
     activeSfx: new Set(),
+    muted: false,
     bgmStarted: false,
     bgmStarting: false,
     bgmFadeFrame: 0,
     bgmVolume: 0.16,
-    sfxVolume: 0.42,
+    sfxVolume: 0.27,
   };
 
   audio.bgm.loop = true;
@@ -132,7 +136,6 @@
   function startAudio() {
     if (audio.bgmStarted || audio.bgmStarting) return;
     audio.bgmStarting = true;
-
     let playback;
     try {
       playback = audio.bgm.play();
@@ -175,8 +178,47 @@
     audio.bgmFadeFrame = window.requestAnimationFrame(tick);
   }
 
+  function readMutedPreference() {
+    try {
+      return window.localStorage.getItem(AUDIO_MUTE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function saveMutedPreference(muted) {
+    try {
+      window.localStorage.setItem(AUDIO_MUTE_KEY, muted ? "1" : "0");
+    } catch (_) {
+      // Storage can be unavailable in private or sandboxed contexts.
+    }
+  }
+
+  function setMuted(muted, persist = true) {
+    audio.muted = muted;
+    audio.bgm.muted = muted;
+
+    for (const sound of audio.activeSfx) {
+      sound.muted = muted;
+    }
+
+    dom.audioToggle.setAttribute("aria-pressed", String(muted));
+    dom.audioToggle.setAttribute("aria-label", muted ? "Unmute audio" : "Mute audio");
+    dom.audioToggle.title = muted ? "Unmute audio (M)" : "Mute audio (M)";
+    dom.audioLabel.textContent = muted ? "MUTED" : "SOUND ON";
+
+    if (persist) saveMutedPreference(muted);
+  }
+
+  function toggleMuted() {
+    const nextMuted = !audio.muted;
+    setMuted(nextMuted);
+    if (!nextMuted) startAudio();
+  }
+
   function playShatter() {
     startAudio();
+    if (audio.muted) return;
 
     // Every impact gets its own audio element, so overlapping hits all ring
     // out fully instead of restarting or cutting off the previous shatter.
@@ -1461,10 +1503,23 @@
   }
 
   window.addEventListener("keydown", (event) => {
+    if (event.code === "KeyM" && !event.repeat) {
+      event.preventDefault();
+      toggleMuted();
+      return;
+    }
+
     if (event.code !== "Space" && event.key !== " ") return;
+    if (event.target instanceof Element && event.target.closest("button")) return;
+
     event.preventDefault();
     if (event.repeat) return;
     requestAttack();
+  });
+
+  dom.audioToggle.addEventListener("click", (event) => {
+    toggleMuted();
+    if (event.detail > 0) dom.audioToggle.blur();
   });
 
   window.addEventListener("keydown", startAudio, { once: true });
@@ -1497,6 +1552,7 @@
     dom.hintCopy.textContent = "SLIDE TO NEAREST SIGNAL";
   }
 
+  setMuted(readMutedPreference(), false);
   resize();
   ctx.lineCap = "round";
   ctx.lineJoin = "round";

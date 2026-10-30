@@ -49,9 +49,16 @@
     <div class="side-label side-right" aria-hidden="true">INFINITE FIELD</div>
 
     <footer class="hud hud-bottom">
-      <div class="uptime">
-        <span class="meta-label">UPTIME</span>
-        <span id="uptime">00:00</span>
+      <div class="footer-left">
+        <div class="uptime">
+          <span class="meta-label">UPTIME</span>
+          <span id="uptime">00:00</span>
+        </div>
+
+        <button class="audio-toggle" id="audioToggle" type="button" aria-pressed="false" aria-label="Mute audio" title="Mute audio (M)">
+          <span class="audio-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span id="audioLabel">SOUND ON</span>
+        </button>
       </div>
 
       <div class="hint" id="hint">

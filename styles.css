@@ -366,6 +366,96 @@ canvas {
   padding: 0 var(--pad) max(22px, env(safe-area-inset-bottom));
 }
 
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.audio-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 4px 10px 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.audio-toggle:hover {
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.audio-toggle:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.58);
+  outline-offset: 3px;
+}
+
+.audio-toggle[aria-pressed="true"] {
+  color: var(--dim);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.audio-glyph {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  width: 11px;
+  height: 9px;
+}
+
+.audio-glyph i {
+  display: block;
+  width: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transform-origin: bottom center;
+  transition: height 160ms ease, opacity 160ms ease;
+}
+
+.audio-glyph i:nth-child(1) { height: 4px; }
+.audio-glyph i:nth-child(2) { height: 7px; }
+.audio-glyph i:nth-child(3) { height: 9px; }
+
+.audio-glyph::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  left: -1px;
+  height: 1px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: rotate(-45deg);
+  transition: opacity 160ms ease;
+}
+
+.audio-toggle[aria-pressed="true"] .audio-glyph i {
+  height: 2px;
+  opacity: 0.5;
+}
+
+.audio-toggle[aria-pressed="true"] .audio-glyph::after {
+  opacity: 1;
+}
+
 .uptime,
 .kills {
   display: flex;
@@ -607,10 +697,22 @@ kbd {
     margin-bottom: 9px;
   }
 
-  .kills {
-    grid-column: 1 / -1;
+  .footer-left {
+    grid-column: 1;
     grid-row: 2;
-    justify-self: center;
+    justify-self: start;
+  }
+
+  .audio-toggle {
+    min-height: 24px;
+    padding-right: 8px;
+    font-size: 6.5px;
+  }
+
+  .kills {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
   }
 
   .kills .meta-label {
@@ -662,7 +764,9 @@ kbd {
   .toast,
   .score,
   .chain,
-  .hint {
+  .hint,
+  .audio-toggle,
+  .audio-glyph i {
     transition-duration: 1ms;
   }
 }

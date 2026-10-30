@@ -17,6 +17,7 @@ No build step or dependencies are required.
 - **Space** / **Tap** — intercept the nearest enemy signal
 - Press again while sliding to queue one follow-up strike
 - Chain kills within 2.4 seconds to raise the score multiplier
+- **M** or the **SOUND ON / MUTED** button — mute or unmute all audio
 
 ## Audio
 
@@ -24,6 +25,7 @@ No build step or dependencies are required.
 - `audio/shatter_01.mp3` plays on every kill and always runs to completion
 - Rapid kills overlap naturally instead of cutting off the previous impact
 - Browsers require a user gesture, so audio starts on the first Space press or tap
+- The mute preference is remembered between visits
 
 ## Notes
 
